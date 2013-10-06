@@ -6,6 +6,7 @@ import json
 
 from reddit_functions import get_submission_dict
 from reddit_functions import get_comments_by_submission_id
+from reddit_functions import build_dictionaries
 
 app = Flask(__name__)
 
@@ -16,6 +17,11 @@ def submissions():
 @app.route('/comments/<int:id>', methods=['GET', 'POST'])
 def comments(id):
         return json.dumps(get_comments_by_submission_id(id))
+
+@app.route('/refresh', methods=['GET', 'POST'])
+def refresh():
+    build_dictionaries()
+    return "Reddit page updated!"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT",5000))
