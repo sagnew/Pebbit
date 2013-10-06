@@ -7,20 +7,21 @@ import json
 from reddit_functions import get_submission_dict
 from reddit_functions import get_comments_by_submission_id
 from reddit_functions import build_dictionaries
+from reddit_functions import cache_initial_data
 
 app = Flask(__name__)
 
-@app.route('/submissions', methods=['GET', 'POST'])
-def submissions():
-    return json.dumps(get_submission_dict())
+@app.route('/<int:pebble>/submissions', methods=['GET', 'POST'])
+def submissions(pebble):
+    return json.dumps(get_submission_dict(pebble))
 
-@app.route('/comments/<int:id>', methods=['GET', 'POST'])
-def comments(id):
-        return json.dumps(get_comments_by_submission_id(id))
+@app.route('/<int:pebble>/comments/<int:id>', methods=['GET', 'POST'])
+def comments(pebble, id):
+        return json.dumps(get_comments_by_submission_id(pebble, id))
 
 @app.route('/refresh', methods=['GET', 'POST'])
 def refresh():
-    build_dictionaries()
+    cache_initial_data()
     return "Reddit page updated!"
 
 if __name__ == '__main__':
