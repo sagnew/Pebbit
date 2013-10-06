@@ -58,10 +58,11 @@ def get_comments_by_submission_id(pebble, id):
         count_dict[pebble] = {}
         count_dict[pebble]['submissions'] = 0
         count_dict[pebble]['comments'] = {}
-        count_dict[pebble]['comments'][id] = 0
     if pebble not in comment_dict.keys():
         comment_dict[pebble] = {}
         build_dictionaries(pebble)
+    if id not in count_dict[pebble]['comments'].keys():
+        count_dict[pebble]['comments'][id] = 0
     comment_count = count_dict[pebble]['comments'][id]
     count_dict[pebble]['comments'][id] += 1
     return {0: comment_dict[pebble][id][1][comment_count]}
