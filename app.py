@@ -5,12 +5,17 @@ import os
 import json
 
 from reddit_functions import get_submission_dict
+from reddit_functions import get_comments_by_submission_id
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
-def main_page():
+@app.route('/submissions', methods=['GET', 'POST'])
+def submissions():
     return json.dumps(get_submission_dict())
+
+@app.route('/comments/<int:id>', methods=['GET', 'POST'])
+def comments(id):
+        return json.dumps(get_comments_by_submission_id(id))
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT",5000))
