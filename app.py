@@ -8,6 +8,7 @@ from reddit_functions import get_submission_dict
 from reddit_functions import get_comments_by_submission_id
 from reddit_functions import build_dictionaries
 from reddit_functions import cache_initial_data
+from reddit_functions import reset
 
 app = Flask(__name__)
 
@@ -23,6 +24,11 @@ def comments(pebble, id):
 def refresh():
     cache_initial_data()
     return "Reddit page updated!"
+
+@app.route('/reset', methods=['GET', 'POST'])
+def reset_values():
+    reset()
+    return "Everything was reset!"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT",5000))
