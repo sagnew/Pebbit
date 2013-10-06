@@ -67,4 +67,12 @@ def get_comments_by_submission_id(pebble, id):
     count_dict[pebble]['comments'][id] += 1
     return {0: comment_dict[pebble][id][1][comment_count]}
 
+def reset():
+    submission_dict = {}
+    comment_dict = {}
+    initial_data = {}
+    count_dict = {}
+    cache_initial_data()
+
+
 cache_initial_data()
