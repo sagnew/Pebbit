@@ -5,8 +5,8 @@ r = praw.Reddit('Testing')
 
 submission_dict = {}
 comment_dict = {}
-
 initial_data = {}
+count_dict = {}
 
 def cache_initial_data():
     submissions = r.get_subreddit('all')
@@ -42,18 +42,28 @@ def build_dictionaries(pebble):
     submission_dict[pebble] = initial_data['submissions']
 
 def get_submission_dict(pebble):
+    if pebble not in count_dict.keys():
+        count_dict[pebble] = {}
+        count_dict[pebble]['submissions'] = 0
+        count_dict[pebble]['comments'] = {}
     if pebble not in submission_dict.keys():
         submission_dict[pebble] = {}
         build_dictionaries(pebble)
-    return submission_dict[pebble]
+    submission_count = count_dict[pebble]['submissions']
+    count_dict[pebble]['submissions'] += 1
+    return {0: submission_dict[pebble][submission_count]}
 
 def get_comments_by_submission_id(pebble, id):
+    if pebble not in count_dict.keys():
+        count_dict[pebble] = {}
+        count_dict[pebble]['submissions'] = 0
+        count_dict[pebble]['comments'] = {}
+        count_dict[pebble]['comments'][id] = 0
     if pebble not in comment_dict.keys():
         comment_dict[pebble] = {}
         build_dictionaries(pebble)
-    return comment_dict[pebble][id]
-
-def get_comment_dict():
-    return comment_dict
+    comment_count = count_dict[pebble]['comments'][id]
+    count_dict[pebble]['comments'][id] += 1
+    return {0: comment_dict[pebble][id][1][comment_count]}
 
 cache_initial_data()
