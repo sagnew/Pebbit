@@ -14,13 +14,17 @@ def build_dictionaries():
     submissions = r.get_subreddit('all')
 
     count = 0
-    for submission in submissions.get_top(limit=5):
+    for submission in submissions.get_top(limit=1):
         submission_dict[count] = submission.title
         comment_dict[count] = {}
         comment_dict[count][0] = submission.title
         comment_dict[count][1] = []
+        comment_count = 0
         for comment in submission.comments:
-            comment_dict[count]['comments'].append(comment.__str__())
+            if comment_count > 1:
+                break
+            comment_dict[count][1].append(comment.__str__())
+            comment_count += 1
         count += 1
 
 def get_submission_dict():
