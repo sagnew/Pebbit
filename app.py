@@ -4,31 +4,28 @@ from flask import redirect
 import os
 import json
 
-from reddit_functions import get_submission_dict
-from reddit_functions import get_comments_by_submission_id
-from reddit_functions import build_dictionaries
-from reddit_functions import cache_initial_data
-from reddit_functions import reset
+from reddit_functions import RedditRetriever
 
 app = Flask(__name__)
+r = RedditRetriever()
+
+@app.route('/', methods=['GET', 'POST'])
+def initiate():
+    r.cache_initial_data()
+    return "Initiation complete!"
 
 @app.route('/<int:pebble>/submissions', methods=['GET', 'POST'])
 def submissions(pebble):
-    return json.dumps(get_submission_dict(pebble))
+    return json.dumps(r.get_submission_dict(pebble))
 
 @app.route('/<int:pebble>/comments/<int:id>', methods=['GET', 'POST'])
 def comments(pebble, id):
-        return json.dumps(get_comments_by_submission_id(pebble, id))
+        return json.dumps(r.get_comments_by_submission_id(pebble, id))
 
 @app.route('/refresh', methods=['GET', 'POST'])
 def refresh():
-    cache_initial_data()
+    r.cache_initial_data()
     return "Reddit page updated!"
-
-@app.route('/reset', methods=['GET', 'POST'])
-def reset_values():
-    reset()
-    return "Everything was reset!"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT",5000))
