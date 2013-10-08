@@ -12,11 +12,15 @@ PBL_APP_INFO(HTTP_UUID,
 
 #define NUM_MENU_SECTIONS 1
 #define NUM_FIRST_MENU_ITEMS 21
-
-char titles[50][20];
+#define MENU_CELL_BASIC_CELL_HEIGHT ((const int16_t) 90)
 	
-Window window;
+char titles[25][50];
+	
+Window main_window;
+Window comment_window;
 MenuLayer menu_layer;
+MenuLayer comment_layer;
+int index;
 
 int error = 0;
 
@@ -36,19 +40,19 @@ void start_http_request(){
 
 
 void handle_http_success(int32_t request_id, int http_status, DictionaryIterator* sent, void* context){
-	int i;
-	for(i=0; i<20; i++){
-		Tuple *tuple = dict_find(sent, 0);
-		
-		strcpy(titles[i], tuple->value->cstring);
-	}
+	Tuple *tuple = dict_find(sent, 0);
+	strcpy(titles[index], tuple->value->cstring);
 	error = 0;
+	if(index!=20){
+		index++;
+		start_http_request();
+	}
 }
 
 void handle_http_failure(int32_t request_id, int http_status, void* context){
-	int i;
-	for(i=0; i<20; i++){
-		strcpy(titles[i], "Failure\0");
+	strcpy(titles[index], "Failure\0");
+	if(index!=20){
+		start_http_request();
 	}
 }
 
@@ -56,6 +60,10 @@ void handle_http_failure(int32_t request_id, int http_status, void* context){
 // With this, you can dynamically add and remove sections
 uint16_t menu_get_num_sections_callback(MenuLayer *me, void *data) {
   return NUM_MENU_SECTIONS;
+}
+
+int16_t menu_get_cell_height_callback(MenuLayer *me, MenuIndex *cell_index, void *data) {
+	return MENU_CELL_BASIC_CELL_HEIGHT;
 }
 
 
@@ -80,18 +88,29 @@ void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t 
 // This is the menu item draw callback where you specify what each item should look like
 void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
   // Determine which section we're going to draw in
-	menu_cell_basic_draw(ctx, cell_layer, titles[cell_index->row], "Subreddit by Username", NULL);  	
+	graphics_context_set_text_color(ctx, GColorBlack);
+	GRect box = cell_layer->bounds;
+	int x = 5;
+	box.size.w -=x;
+	box.origin.x = x;
+	GFont font = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
+	box.size.h = 60;
+	graphics_text_draw(ctx, titles[cell_index->row], font, box, GTextOverflowModeWordWrap, GTextAlignmentLeft, NULL);
+	//menu_cell_basic_draw(ctx, cell_layer, titles[cell_index->row], NULL, NULL);  	
 }
 
+void comment_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data){
+	menu_cell_basic_draw(ctx, cell_layer, "comment", NULL, NULL);
+}
 
 // Here we capture when a user selects a menu item
 void menu_select_callback(MenuLayer *me, MenuIndex *cell_index, void *data) {
-
+	window_stack_push(&comment_window, true);
 }
 
 
 // This initializes the menu upon window load
-void window_load(Window *me) {
+void main_window_load(Window *me) {
   // Here we load the bitmap assets
   // resource_init_current_app must be called before all asset loading
 
@@ -99,7 +118,7 @@ void window_load(Window *me) {
   // We need the bounds to specify the menu layer's viewport size
   // In this case, it'll be the same as the window's
   GRect bounds = me->layer.bounds;
-
+	index = 0;
 	start_http_request();
 	
   // Initialize the menu layer
@@ -109,6 +128,7 @@ void window_load(Window *me) {
   menu_layer_set_callbacks(&menu_layer, NULL, (MenuLayerCallbacks){
     .get_num_sections = menu_get_num_sections_callback,
     .get_num_rows = menu_get_num_rows_callback,
+	.get_cell_height = menu_get_cell_height_callback,
     .get_header_height = menu_get_header_height_callback,
     .draw_header = menu_draw_header_callback,
     .draw_row = menu_draw_row_callback,
@@ -119,25 +139,42 @@ void window_load(Window *me) {
   menu_layer_set_click_config_onto_window(&menu_layer, me);
 
   // Add it to the window for display
-  layer_add_child(&me->layer, menu_layer_get_layer(&menu_layer));
+  layer_add_child(&me->layer, (Layer*)&menu_layer);
 }
 
+void comment_window_load(Window *window){
+	GRect comment_bounds = layer_get_bounds(&window->layer);
+	menu_layer_init(&comment_layer, comment_bounds);
 
-void window_unload(Window *me) {
-  // Cleanup the menu icons
+	menu_layer_set_callbacks(&comment_layer, NULL, (MenuLayerCallbacks){
+    .get_num_sections = menu_get_num_sections_callback,
+    .get_num_rows = menu_get_num_rows_callback,
+	.get_cell_height = menu_get_cell_height_callback,
+    .get_header_height = menu_get_header_height_callback,
+    .draw_header = menu_draw_header_callback,
+    .draw_row = comment_draw_row_callback,
+  });
+	  // Bind the menu layer's click config provider to the window for interactivity
+  layer_add_child(&window->layer, (Layer*)&comment_layer);
 }
 
+void comment_window_unload(Window *window) {
+  layer_remove_child_layers(&window->layer);
+}
 
 void handle_init(AppContextRef ctx) {
-	window_init(&window, "Pebbit");
-  window_stack_push(&window, true /* Animated */);
-	
-
-  // Setup the window handlers
-  window_set_window_handlers(&window, (WindowHandlers){
-    .load = window_load,
-    .unload = window_unload,
+	window_init(&main_window, "Pebbit");
+  window_stack_push(&main_window, true /* Animated */);
+  window_set_window_handlers(&main_window, (WindowHandlers){
+    .load = main_window_load,
   });
+	
+	window_init(&comment_window, "Comments");
+	window_set_window_handlers(&comment_window, (WindowHandlers){
+    .load = comment_window_load,
+    .unload = comment_window_unload,
+  });
+	
 }
 
 
@@ -155,6 +192,7 @@ void pbl_main(void *params) {
     .failure = handle_http_failure,
     .success = handle_http_success,
   };
+	
   http_register_callbacks(http_callbacks, NULL);
   app_event_loop(params, &handlers);
 }
