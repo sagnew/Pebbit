@@ -26,7 +26,7 @@ int error = 0;
 
 void start_http_request(){
 	DictionaryIterator *out;
-	HTTPResult result = http_out_get("http://hidden-meadow-9733.herokuapp.com/submissions", 155, &out);
+	HTTPResult result = http_out_get("http://pebbit-api.herokuapp.com/42/submissions", 155, &out);
 	if(result != HTTP_OK){
 		error = result;
 		return;
@@ -43,7 +43,7 @@ void handle_http_success(int32_t request_id, int http_status, DictionaryIterator
 	Tuple *tuple = dict_find(sent, 0);
 	strcpy(titles[index], tuple->value->cstring);
 	error = 0;
-	if(index!=20){
+	if(index!=5){
 		index++;
 		start_http_request();
 	}
@@ -51,7 +51,7 @@ void handle_http_success(int32_t request_id, int http_status, DictionaryIterator
 
 void handle_http_failure(int32_t request_id, int http_status, void* context){
 	strcpy(titles[index], "Failure\0");
-	if(index!=20){
+	if(index!=5){
 		start_http_request();
 	}
 }
