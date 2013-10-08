@@ -69,3 +69,11 @@ class RedditRetriever():
         comment_count = self.count_dict[pebble]['comments'][id]
         self.count_dict[pebble]['comments'][id] += 1
         return {0: self.comment_dict[pebble][id][1][comment_count]}
+
+    def reset(self):
+        self.submission_dict = {}
+        self.comment_dict = {}
+        self.initial_data = {}
+        self.count_dict = {}
+        self.cache_initial_data()
+        return "Everything was reset"

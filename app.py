@@ -27,6 +27,10 @@ def refresh():
     r.cache_initial_data()
     return "Reddit page updated!"
 
+@app.route('/reset', methods=['GET', 'POST'])
+def reset_values():
+    return r.reset()
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT",5000))
     app.run(host='0.0.0.0', port=port, debug=True)
