@@ -3,7 +3,6 @@ import praw
 
 class RedditRetriever():
 
-
     def __init__(self):
         self.submission_dict = {}
         self.comment_dict = {}
@@ -17,7 +16,7 @@ class RedditRetriever():
         self.initial_data['comments'] = {}
 
         count = 0
-        for submission in submissions.get_top(limit=25):
+        for submission in submissions.get_top(limit=10):
             self.initial_data['submissions'][count] = submission.title
             self.initial_data['comments'][count] = {}
             self.initial_data['comments'][count][0] = submission.title
@@ -29,7 +28,6 @@ class RedditRetriever():
                 self.initial_data['comments'][count][1].append(comment.__str__())
                 comment_count += 1
             count += 1
-
 
     def build_dictionaries(self, pebble):
         """
